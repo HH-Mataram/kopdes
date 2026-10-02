@@ -90,7 +90,7 @@ export default function Dashboard({ aksi, targets, realisasi, hariIni, bulanAwal
   })()
 
   const grid = {
-    gridTemplateColumns: `minmax(0, 1fr) 72px repeat(${minggu.length}, 54px) 76px 120px 130px`,
+    gridTemplateColumns: `minmax(0, 1fr) 64px repeat(${minggu.length}, 50px) 64px 108px 120px`,
   }
 
   return (
@@ -114,7 +114,7 @@ export default function Dashboard({ aksi, targets, realisasi, hariIni, bulanAwal
             <div className="card" key={k.label}>
               <div className="lbl">{k.label}</div>
               <div className="val">{k.nilai}</div>
-              <div className="lbl">{k.ket}</div>
+              <div className="note">{k.ket}</div>
             </div>
           ))}
         </div>
@@ -134,11 +134,13 @@ export default function Dashboard({ aksi, targets, realisasi, hariIni, bulanAwal
             </div>
             <div className="seg" role="group" aria-label="Pilih bulan">
               <span className="lbl">Target</span>
-              {BULAN.map((b, i) => (
-                <button key={b.kode} type="button" className={i === bIdx ? 'aktif' : ''} onClick={() => setBIdx(i)}>
-                  {b.kode}
-                </button>
-              ))}
+              <div className="segbtn">
+                {BULAN.map((b, i) => (
+                  <button key={b.kode} type="button" className={i === bIdx ? 'aktif' : ''} onClick={() => setBIdx(i)}>
+                    {b.kode}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -193,7 +195,7 @@ export default function Dashboard({ aksi, targets, realisasi, hariIni, bulanAwal
                 <div className="ach">
                   <div className="track">
                     <div className="isi" style={{ width: `${Math.min(h.ach ?? 0, 100)}%`, background: BAR[h.status] }} />
-                    {h.pace > 0 ? <div className="pace" style={{ left: `calc(${h.pace}% - 1px)` }} /> : null}
+                    {h.pace > 0 && h.ach !== null ? <div className="pace" style={{ left: `calc(${h.pace}% - 1px)` }} /> : null}
                   </div>
                   <span className="pct" style={{ color: WARNA[h.status] }}>
                     {h.ach === null ? '–' : `${Math.round(h.ach)}%`}
@@ -217,7 +219,7 @@ export default function Dashboard({ aksi, targets, realisasi, hariIni, bulanAwal
                 </div>
                 <div className="track">
                   <div className="isi" style={{ width: `${Math.min(h.ach ?? 0, 100)}%`, background: BAR[h.status] }} />
-                  {h.pace > 0 ? <div className="pace" style={{ left: `calc(${h.pace}% - 1px)` }} /> : null}
+                  {h.pace > 0 && h.ach !== null ? <div className="pace" style={{ left: `calc(${h.pace}% - 1px)` }} /> : null}
                 </div>
                 <div className="wk" style={{ gridTemplateColumns: `repeat(${minggu.length}, minmax(0, 1fr))` }}>
                   {h.minggu.map((v, i) => (
