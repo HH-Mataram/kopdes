@@ -36,6 +36,18 @@ function Angka({ v, dec }: { v: number | null; dec?: number }) {
   return <>{fmt(v, dec)}</>
 }
 
+// Target: angka lalu satuan langsung di belakangnya, mis. "5.370 SO" atau "90%"
+function TargetSatuan({ v, satuan }: { v: number | null; satuan: string | null }) {
+  if (v === null) return <>–</>
+  const u = !satuan ? '' : satuan === '%' ? '%' : ` ${satuan}`
+  return (
+    <>
+      {fmt(v)}
+      <span className="tunit">{u}</span>
+    </>
+  )
+}
+
 export default function Dashboard({ aksi, targets, realisasi, hariIni, bulanAwal, sinkron }: Props) {
   const [kIdx, setKIdx] = useState(0)
   const [bIdx, setBIdx] = useState(bulanAwal)
@@ -85,12 +97,12 @@ export default function Dashboard({ aksi, targets, realisasi, hariIni, bulanAwal
   const ringkas = (() => {
     const nilai = rows.filter((r) => r.h.ach !== null).map((r) => Math.min(r.h.ach as number, 100))
     const rata = nilai.length ? Math.round(nilai.reduce((p, q) => p + q, 0) / nilai.length) : null
-    const pic = Array.from(new Set(terpilih.daftar.map((a) => a.pic).filter((p): p is string => !!p))).join(' · ')
-    return `${pic ? `PIC ${pic} · ` : ''}${rows.length} action · ACH rata-rata ${rata === null ? '–' : `${rata}%`}`
+    const pic = Array.from(new Set(terpilih.daftar.map((a) => a.pic).filter((p): p is string => !!p))).join(', ')
+    return `${pic ? `Divisi ${pic} · ` : ''}${rows.length} action · ACH rata-rata ${rata === null ? '–' : `${rata}%`}`
   })()
 
   const grid = {
-    gridTemplateColumns: `minmax(0, 1fr) 64px repeat(${minggu.length}, 50px) 64px 108px 120px`,
+    gridTemplateColumns: `minmax(0, 1fr) 104px repeat(${minggu.length}, 50px) 64px 108px 120px`,
   }
 
   return (
@@ -173,10 +185,9 @@ export default function Dashboard({ aksi, targets, realisasi, hariIni, bulanAwal
                   <span className="nm" title={a.action}>
                     {a.action}
                   </span>
-                  {a.satuan ? <span className="unit">{a.satuan}</span> : null}
                 </div>
                 <div className="num" style={{ color: '#3B4856' }}>
-                  <Angka v={h.target} />
+                  <TargetSatuan v={h.target} satuan={a.satuan} />
                 </div>
                 {h.minggu.map((v, i) => (
                   <div className="num" key={i} style={{ color: v === null ? MUTED : undefined }}>
@@ -211,7 +222,7 @@ export default function Dashboard({ aksi, targets, realisasi, hariIni, bulanAwal
               <div className="item" key={a.kode}>
                 <div className="itop">
                   <div>
-                    <span className="nm2">{a.action}</span> {a.satuan ? <span className="unit">{a.satuan}</span> : null}
+                    <span className="nm2">{a.action}</span>
                   </div>
                   <span className="pct" style={{ color: WARNA[h.status] }}>
                     {h.ach === null ? '–' : `${Math.round(h.ach)}%`}
@@ -235,7 +246,7 @@ export default function Dashboard({ aksi, targets, realisasi, hariIni, bulanAwal
                   <div>
                     <div className="lbl2">Target</div>
                     <div className="mid">
-                      <Angka v={h.target} />
+                      <TargetSatuan v={h.target} satuan={a.satuan} />
                     </div>
                   </div>
                   <div>
