@@ -17,6 +17,7 @@ import {
 import type { AksiRow, Hitung, RealRow, Status, TargetRow, Tipe } from '../lib/hitung'
 import {
   Chip,
+  DivBadge,
   Donut,
   IconBars,
   IconCalendar,
@@ -64,14 +65,42 @@ function Angka({ v, dec }: { v: number | null; dec?: number }) {
   return <>{fmt(v, dec)}</>
 }
 
-// Target: angka lalu satuan langsung di belakangnya, mis. "5.370 SO" atau "90%"
+// Target: angka lalu satuan di belakangnya, mis. "5.370 SO" atau "90%".
+// Angka dan satuan dipisah elemen supaya di tabel angkanya sejajar kanan dan satuannya sejajar kiri.
 function TargetSatuan({ v, satuan }: { v: number | null; satuan: string | null }) {
-  if (v === null) return <>–</>
-  const u = !satuan ? '' : satuan === '%' ? '%' : ` ${satuan}`
+  if (v === null) {
+    return (
+      <>
+        <span className="tn">–</span>
+        <span className="tunit" />
+      </>
+    )
+  }
+  const persen = satuan === '%'
   return (
     <>
-      {fmt(v)}
-      <span className="tunit">{u}</span>
+      <span className="tn">
+        {fmt(v)}
+        {persen ? '%' : ''}
+      </span>
+      <span className="tunit">{satuan && !persen ? satuan : ''}</span>
+    </>
+  )
+}
+
+// Nama action + lencana divisi. Kata terakhir dan lencana dijaga satu baris,
+// supaya lencana tidak terlempar sendirian ke baris berikutnya.
+function NamaAksi({ teks, divisi }: { teks: string; divisi: string | null }) {
+  const i = teks.lastIndexOf(' ')
+  const depan = i > 0 ? teks.slice(0, i + 1) : ''
+  const akhir = i > 0 ? teks.slice(i + 1) : teks
+  return (
+    <>
+      {depan}
+      <span className="akhir">
+        {akhir}
+        <DivBadge divisi={divisi} />
+      </span>
     </>
   )
 }
@@ -494,25 +523,35 @@ export default function Dashboard({ aksi, targets, realisasi, hariIni, bulanAwal
               {/* Tampilan lebar: tabel */}
               <div className="desk">
                 <div className="tinner" style={{ minWidth: 32 + 546 + 54 * minggu.length + 10 * (minggu.length + 5) + 220 }}>
-                <div className="thead">
-                  <div className="grp" style={grid}>
-                    <div style={{ gridColumn: `3 / span ${minggu.length + 1}` }} className="grp-label">
-                      Actual
-                    </div>
+                {/* Header 2 baris dengan sel gabungan (seperti Excel): Action, Target, RR, ACH, Status
+                    melintang 2 baris dan rata tengah; ACTUAL melintang di atas W1..Total. */}
+                <div className="thead" style={grid}>
+                  <div className="hc hm" style={{ gridRow: '1 / span 2', gridColumn: 1 }}>
+                    Action
                   </div>
-                  <div className="hrow" style={grid}>
-                    <div>Action</div>
-                    <div className="num">Target</div>
-                    {minggu.map((w, i) => (
-                      <div className={`num${i === cw ? ' cwh' : ''}`} key={i}>
-                        W{i + 1}
-                        <div className="tgl">{w.awal === w.akhir ? w.awal : `${w.awal}–${w.akhir}`}</div>
-                      </div>
-                    ))}
-                    <div className="num">Total</div>
-                    <div className="num">RR</div>
-                    <div className="num">ACH</div>
-                    <div className="num">Status</div>
+                  <div className="hc hm" style={{ gridRow: '1 / span 2', gridColumn: 2 }}>
+                    Target
+                  </div>
+                  <div className="grp-label" style={{ gridRow: 1, gridColumn: `3 / span ${minggu.length + 1}` }}>
+                    Actual
+                  </div>
+                  {minggu.map((w, i) => (
+                    <div className={`num${i === cw ? ' cwh' : ''}`} style={{ gridRow: 2, gridColumn: 3 + i }} key={i}>
+                      W{i + 1}
+                      <div className="tgl">{w.awal === w.akhir ? w.awal : `${w.awal}–${w.akhir}`}</div>
+                    </div>
+                  ))}
+                  <div className="num" style={{ gridRow: 2, gridColumn: 3 + minggu.length }}>
+                    Total
+                  </div>
+                  <div className="hc hm" style={{ gridRow: '1 / span 2', gridColumn: 4 + minggu.length }}>
+                    RR
+                  </div>
+                  <div className="hc hm" style={{ gridRow: '1 / span 2', gridColumn: 5 + minggu.length }}>
+                    ACH
+                  </div>
+                  <div className="hc hm" style={{ gridRow: '1 / span 2', gridColumn: 6 + minggu.length }}>
+                    Status
                   </div>
                 </div>
 
@@ -520,10 +559,10 @@ export default function Dashboard({ aksi, targets, realisasi, hariIni, bulanAwal
                   <div className="row" style={grid} key={a.kode}>
                     <div className="nama">
                       <span className="nm" title={a.action}>
-                        {a.action}
+                        <NamaAksi teks={a.action} divisi={a.pic} />
                       </span>
                     </div>
-                    <div className="num tgt">
+                    <div className="tgt">
                       <TargetSatuan v={h.target} satuan={a.satuan} />
                     </div>
                     {h.minggu.map((v, i) => (
@@ -534,11 +573,11 @@ export default function Dashboard({ aksi, targets, realisasi, hariIni, bulanAwal
                     <div className={`num tot${h.total === null ? ' na' : ''}`}>
                       <Angka v={h.total} />
                     </div>
-                    <div className={`num rr st-${statusRR(h.rrPct)}${h.rr === null ? ' na' : ''}`}>
-                      <span className="tot">
+                    <div className={`rrc rr st-${statusRR(h.rrPct)}${h.rr === null ? ' na' : ''}`}>
+                      <span className="rrv tot">
                         <Angka v={h.rr} />
-                      </span>{' '}
-                      <span className="kecil">{h.rrPct === null ? '' : `${Math.round(h.rrPct)}%`}</span>
+                      </span>
+                      <span className="rrp kecil">{h.rrPct === null ? '' : `${Math.round(h.rrPct)}%`}</span>
                     </div>
                     <div className={`ach st-${h.status}`}>
                       <div className="track">
@@ -547,7 +586,7 @@ export default function Dashboard({ aksi, targets, realisasi, hariIni, bulanAwal
                       </div>
                       <span className="pct">{pctTeks(h.ach)}</span>
                     </div>
-                    <div className="num">
+                    <div>
                       <Chip status={h.status}>{STATUS_LABEL[h.status]}</Chip>
                     </div>
                   </div>
@@ -560,7 +599,11 @@ export default function Dashboard({ aksi, targets, realisasi, hariIni, bulanAwal
                 {rows.map(({ a, h }) => (
                   <div className={`item st-${h.status}`} key={a.kode}>
                     <div className="itop">
-                      <span className="nm2">{a.action}</span>
+                      <div>
+                        <span className="nm2">
+                          <NamaAksi teks={a.action} divisi={a.pic} />
+                        </span>
+                      </div>
                       <Chip status={h.status}>{STATUS_LABEL[h.status]}</Chip>
                     </div>
                     <div className="ach">
@@ -605,31 +648,6 @@ export default function Dashboard({ aksi, targets, realisasi, hariIni, bulanAwal
                     </div>
                   </div>
                 ))}
-              </div>
-
-              <div className="legend">
-                <span className="lg-i">
-                  <StatusIcon status="on" size={14} />
-                  On Track: ACH sudah di atas posisi hari ini
-                </span>
-                <span className="lg-i">
-                  <StatusIcon status="watch" size={14} />
-                  Watch: 90–99% dari posisi
-                </span>
-                <span className="lg-i">
-                  <StatusIcon status="risk" size={14} />
-                  At Risk: di bawah 90%
-                </span>
-                {paceHariIni > 0 ? (
-                  <span className="lg-i">
-                    <i className="pace-lg" />
-                    Posisi seharusnya hari ini ({paceHariIni}%)
-                  </span>
-                ) : null}
-                <span className="lg-n">
-                  W = minggu Senin–Minggu (tanggal {bulan.nama}). “–” = belum diisi, “0” = sudah dicek nol. RR = proyeksi akhir bulan
-                  {jalan > 0 ? ` (Total ÷ ${jalan} hari × ${totalHari} hari)` : ''}, % = RR ÷ target. ACH = Total ÷ target. Metrik level (outlet, %, Active LIS): Total = minggu terakhir, RR tidak dihitung.
-                </span>
               </div>
             </>
           )}

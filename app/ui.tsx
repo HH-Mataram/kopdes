@@ -400,3 +400,21 @@ export function TrendChart({ minggu, values, tipe, target, jalan, totalHari, lab
     </div>
   )
 }
+
+
+/* ---------- lencana divisi: M = Mobile, H = Household, N = Network ---------- */
+const DIVISI: Record<string, { huruf: string; kelas: string }> = {
+  Mobile: { huruf: 'M', kelas: 'dv-m' },
+  Household: { huruf: 'H', kelas: 'dv-h' },
+  Network: { huruf: 'N', kelas: 'dv-n' },
+}
+
+export function DivBadge({ divisi }: { divisi: string | null }) {
+  const d = divisi ? DIVISI[divisi] : undefined
+  if (!d) return null
+  return (
+    <span className={`dv ${d.kelas}`} role="img" aria-label={`Divisi ${divisi}`} title={`Divisi ${divisi}`}>
+      {d.huruf}
+    </span>
+  )
+}
