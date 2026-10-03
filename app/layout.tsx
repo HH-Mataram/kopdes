@@ -1,11 +1,10 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
-import { IBM_Plex_Sans } from 'next/font/google'
+import { Inter } from 'next/font/google'
 import './globals.css'
 
-const plex = IBM_Plex_Sans({
+const inter = Inter({
   subsets: ['latin'],
-  weight: ['400', '500', '600'],
   display: 'swap',
 })
 
@@ -18,7 +17,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="id">
-      <body className={plex.className}>{children}</body>
+      <body className={inter.className}>{children}</body>
     </html>
   )
 }

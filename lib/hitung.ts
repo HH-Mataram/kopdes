@@ -8,10 +8,13 @@ export const BULAN = [
   { kode: 'Des', nama: 'Desember', bulan: 12 },
 ]
 
+export const CLUSTER = ['Lombok', 'Sumbawa Barat', 'Sumbawa Timur']
+
 export type Tipe = 'Kumulatif' | 'Level'
 export type Status = 'on' | 'watch' | 'risk' | 'none'
 
 export type AksiRow = {
+  cluster: string
   kode: string
   commitment: string
   action: string
@@ -20,8 +23,8 @@ export type AksiRow = {
   tipe: Tipe
   urutan: number
 }
-export type TargetRow = { kode: string; periode: string; target: number }
-export type RealRow = { kode: string; periode: string; minggu: number; nilai: number }
+export type TargetRow = { cluster: string; kode: string; periode: string; target: number }
+export type RealRow = { cluster: string; kode: string; periode: string; minggu: number; nilai: number }
 
 export type Hitung = {
   target: number | null
@@ -32,6 +35,22 @@ export type Hitung = {
   ach: number | null
   pace: number
   status: Status
+}
+
+// Jumlah nilai yang terisi. Semua kosong -> null (belum ada data), bukan 0.
+export function jumlahTerisi(vals: (number | null)[]): number | null {
+  const ada = vals.filter((v): v is number => v !== null)
+  return ada.length === 0 ? null : ada.reduce((p, q) => p + q, 0)
+}
+
+// Gabungkan nilai beberapa cluster untuk satu action (saat All Cluster).
+// Jumlahkan, kecuali metrik persen (satuan % atau pp) yang dirata-rata.
+// Semua kosong -> null (belum ada data).
+export function gabung(vals: (number | null)[], rata: boolean): number | null {
+  const ada = vals.filter((v): v is number => v !== null)
+  if (ada.length === 0) return null
+  const total = ada.reduce((p, q) => p + q, 0)
+  return rata ? total / ada.length : total
 }
 
 export function periodeStr(bulan: number): string {

@@ -32,11 +32,11 @@ export default async function Page() {
   const [a, t, r, s] = await Promise.all([
     supabase
       .from('kopdes_aksi')
-      .select('kode, commitment, action, satuan, pic, tipe, urutan')
+      .select('cluster, kode, commitment, action, satuan, pic, tipe, urutan')
       .eq('aktif', true)
       .order('urutan', { ascending: true }),
-    supabase.from('kopdes_target').select('kode, periode, target'),
-    supabase.from('kopdes_realisasi').select('kode, periode, minggu, nilai'),
+    supabase.from('kopdes_target').select('cluster, kode, periode, target'),
+    supabase.from('kopdes_realisasi').select('cluster, kode, periode, minggu, nilai'),
     supabase.from('kopdes_sync').select('terakhir').eq('id', 1).maybeSingle(),
   ])
 
